@@ -1,1 +1,22 @@
-export default defineNuxtConfig({ compatibilityDate: '2026-11-20', devtools: { enabled: false }, css: ['~/assets/css/main.css'], app: { head: { htmlAttrs: { lang: 'vi' }, title: 'Kingcup Price — Báo giá sản phẩm', meta: [{ name: 'description', content: 'Tra cứu sản phẩm và chuẩn bị danh sách yêu cầu báo giá cùng Kingcup Price.' }, { name: 'theme-color', content: '#f5f7f2' }] } } });
+export default defineNuxtConfig({
+  compatibilityDate: '2026-11-20',
+  devtools: { enabled: false },
+  runtimeConfig: {
+    adminPassword: '',
+    adminSessionSecret: '',
+  },
+  css: ['~/assets/css/main.css'],
+  app: {
+    head: {
+      htmlAttrs: { lang: 'vi' },
+      title: 'Kingcup Price — Báo giá sản phẩm',
+      meta: [
+        {
+          name: 'description',
+          content: 'Tra cứu sản phẩm và chuẩn bị danh sách yêu cầu báo giá cùng Kingcup Price.',
+        },
+        { name: 'theme-color', content: '#f5f7f2' },
+      ],
+    },
+  },
+});

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { Product, QuoteLine } from '~/types/product';
-const {categories,query,category,sort,filtered}=useProductCatalog();
-const lines=ref<QuoteLine[]>([]); const drawer=ref(false); const copied=ref(false);
+import type { CatalogData, Product, QuoteLine } from '~/types/product';
+const catalog = await useProductCatalog();
+const { categories, query, category, sort, filtered } = catalog;
+const products = catalog.products;
+function onCatalogSaved(next: CatalogData) { catalog.setCatalog(next); }
+const lines=ref<QuoteLine[]>([]); const drawer=ref(false); const copied=ref(false); const adminOpen=ref(false);
 const count=computed(()=>lines.value.length);
 function add(p:Product){const old=lines.value.find(x=>x.product.id===p.id); if(old)old.quantity+=p.minOrder; else lines.value.push({product:p,quantity:p.minOrder}); copied.value=false;}
 function remove(id:string){lines.value=lines.value.filter(x=>x.product.id!==id);copied.value=false;}
@@ -21,8 +24,9 @@ useHead({title:'Kingcup Price — Tìm đúng sản phẩm, chọn giá phù h�
 <section id="process" class="section process"><div class="wrap process-grid"><div><small class="eyebrow">SIMPLE BY DESIGN / 02</small><h2>Từ nhu cầu<br>đến báo giá.</h2><p>Một quy trình đơn giản giúp bạn tổng hợp đúng sản phẩm và thông tin cần trao đổi.</p><button class="text-link" @click="goProducts">Khám phá sản phẩm ↗</button></div><div class="steps"><article><b>01</b><i>⌕</i><div><h3>Tìm sản phẩm</h3><p>Duyệt danh mục hoặc tìm theo tên và mã sản phẩm.</p></div><span>↗</span></article><article><b>02</b><i>▤</i><div><h3>Tạo danh sách</h3><p>Thêm sản phẩm quan tâm và điều chỉnh số lượng dự kiến.</p></div><span>↗</span></article><article><b>03</b><i>➤</i><div><h3>Gửi yêu cầu</h3><p>Sao chép danh sách để gửi đến bộ phận phụ trách báo giá.</p></div><span>↗</span></article></div></div></section>
 <section class="closing"><div class="wrap closing-card"><div><small>LET'S BUILD A BETTER QUOTE</small><h2>Bắt đầu từ danh sách<br>mà bạn cần.</h2><p>Chọn sản phẩm, tổng hợp nhu cầu và chuẩn bị nội dung báo giá chỉ trong vài bước.</p></div><button @click="drawer=true">Mở danh sách báo giá <b>↗</b></button></div></section>
 </main>
-<footer id="about" class="footer"><div class="wrap footer-main"><a class="brand" href="#top"><span class="logo">K<span>.</span></span><span><b>KINGCUP</b><small>PRICE STUDIO</small></span></a><p>Một điểm bắt đầu rõ ràng cho mọi yêu cầu báo giá.</p><a href="#top">Lên đầu trang ↑</a></div><div class="wrap footer-bottom"><span>© 2026 Kingcup Price</span><span>Giao diện demo · Mức giá chỉ mang tính minh họa</span></div></footer>
+<footer id="about" class="footer"><div class="wrap footer-main"><a class="brand" href="#top"><span class="logo">K<span>.</span></span><span><b>KINGCUP</b><small>PRICE STUDIO</small></span></a><p>Một điểm bắt đầu rõ ràng cho mọi yêu cầu báo giá.</p><a href="#top">Lên đầu trang ↑</a></div><div class="wrap footer-bottom"><span>© 2026 Kingcup Price</span><span>Giao diện demo · Mức giá chỉ mang tính minh họa</span><button type="button" class="admin-trigger" @click="adminOpen=true">Quản trị</button></div></footer>
 <QuoteDrawer :open="drawer" :items="lines" @close="drawer=false" @remove="remove" @quantity="quantity" @copy="copy"/>
+<AdminPanel :open="adminOpen" :products="products" :categories="categories" @close="adminOpen=false" @saved="onCatalogSaved"/>
 <div v-if="copied" class="toast" role="status">✓ Đã sao chép yêu cầu báo giá</div>
 </div>
 </template>
