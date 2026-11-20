@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { Product } from '~/types/product';
+defineProps<{product:Product; added:boolean}>(); defineEmits<{add:[product:Product]}>();
+const money=(n:number)=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(n);
+</script>
+<template><article class="product-card"><div class="product-art" :class="'art-'+product.visual"><span class="art-orbit"></span><span class="art-shape"></span><b>{{product.sku}}</b><em v-if="product.badge">{{product.badge}}</em></div><div class="product-body"><div class="product-meta"><span>{{product.category}}</span><small>{{product.sku}}</small></div><h3>{{product.name}}</h3><p>{{product.description}}</p><div class="facts"><span>Đặt tối thiểu {{product.minOrder.toLocaleString('vi-VN')}} {{product.unit}}</span><span>{{product.leadTime}}</span></div><div class="product-bottom"><div><small>Giá tham khảo từ</small><strong>{{money(product.priceFrom)}} <i>/ {{product.unit}}</i></strong></div><button @click="$emit('add',product)">{{added?'＋ Thêm tiếp':'＋ Thêm báo giá'}}</button></div></div></article></template>

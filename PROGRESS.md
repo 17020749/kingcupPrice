@@ -1,25 +1,26 @@
 # Development progress — Kingcup Price
 
-This file tracks the implementation milestones for the Kingcup Price product quotation website.
-
-## Project direction
-
-- Framework: Nuxt 4 + Vue 3 + TypeScript.
-- Product: single-page product quotation landing page.
-- Initial scope: homepage only; no backend, API, authentication, or database.
-- Data source for the first milestone: local mock data.
-- Frontend structure: feature-oriented components and composables, with a repository layer introduced when a real data source is added.
+## Định hướng
+- Nuxt 4 + Vue 3 + TypeScript.
+- Trang chủ duy nhất tại route `/`.
+- Chưa có API, backend, authentication hoặc database.
+- Dữ liệu demo nằm local và được truy cập qua `productRepository`.
+- Kiến trúc feature-oriented: components, composables, repositories, data, types.
 
 ## Milestones
 
-### 2026-11-20 — Project kickoff
-- [x] Confirmed the GitHub repository is empty and the default branch is `main`.
-- [x] Selected Nuxt 4 as the project framework.
-- [ ] Create the Nuxt project foundation and homepage layout.
-- [ ] Add local sample product data, filtering, search, and quote-list interactions.
-- [ ] Add project documentation and verify the production build.
+### 2026-11-20 — Khởi tạo
+- [x] Xác nhận repository trống, nhánh mặc định `main`.
+- [x] Chọn Nuxt 4.
 
-## Notes
+### 2026-11-20 — Homepage foundation
+- [x] Thiết lập Nuxt, TypeScript, scripts và ignore rules.
+- [x] Xây trang chủ responsive với hero, danh mục, sản phẩm, quy trình và footer.
+- [x] Thêm dữ liệu demo, tìm kiếm, lọc danh mục và sắp xếp giá.
+- [x] Thêm quote drawer, điều chỉnh số lượng, xóa và sao chép yêu cầu.
+- [x] Viết README và ghi chú kiến trúc.
+- [ ] Cài dependencies và chạy production build trong môi trường local.
 
-- Product names, prices, minimum quantities, and company details in the first UI are demonstration content. Replace them with verified business data before publishing.
-- The quote list is client-side only in this milestone. It does not submit or persist requests to a server.
+## Lưu ý
+- Tên sản phẩm, SKU, đơn giá, số lượng tối thiểu và thời gian giao hàng chỉ là dữ liệu minh họa. Cần thay bằng dữ liệu được xác nhận trước khi publish.
+- Danh sách báo giá chỉ tồn tại trong state trình duyệt, chưa được gửi hoặc lưu lên server.
