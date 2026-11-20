@@ -27,9 +27,9 @@
 
 ### Việc cần làm sau commit
 - [ ] Thêm `NUXT_ADMIN_PASSWORD` và `NUXT_ADMIN_SESSION_SECRET` vào Vercel Production và Preview.
-- [ ] Chờ Vercel deploy và xác nhận build Production.
-- [ ] Kiểm tra đọc catalog, đăng nhập, upload ảnh, thêm/sửa/xóa sản phẩm trên Preview.
-- [ ] Sau khi xác nhận OIDC hoạt động, xem xét thu hồi read-write token cũ nếu còn tồn tại.
+- [x] Vercel check cho commit tích hợp Blob đã báo Success.
+- [ ] Kiểm tra runtime: đọc catalog, đăng nhập, upload ảnh, thêm/sửa/xóa sản phẩm trên Preview sau khi cấu hình biến môi trường.
+- [ ] Sau khi xác nhận upload/ghi Blob bằng OIDC, xem xét thu hồi read-write token cũ nếu token không được dùng ngoài Vercel.
 
 ## Lưu ý
 - Tên hàng, SKU, giá, số lượng tối thiểu và thời gian giao hàng đang là dữ liệu demo.
