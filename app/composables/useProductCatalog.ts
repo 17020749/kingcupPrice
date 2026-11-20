@@ -20,7 +20,7 @@ export async function useProductCatalog() {
 
   const normalise = (value: string) => value
     .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[đĐ]/g, 'd')
     .toLocaleLowerCase('vi-VN');
 
