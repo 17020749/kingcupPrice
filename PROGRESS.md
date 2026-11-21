@@ -28,12 +28,14 @@
 - [x] Thêm hộp thoại quản trị trên trang chủ để đăng nhập, thêm, sửa và xóa sản phẩm.
 - [x] Ghi tài liệu thiết lập biến môi trường Vercel.
 
-### Việc cần làm sau commit
+### 2026-11-20 — Blob catalog performance
 
-- [ ] Thêm `NUXT_ADMIN_PASSWORD` và `NUXT_ADMIN_SESSION_SECRET` vào Vercel Production và Preview.
-- [x] Vercel check cho commit tích hợp Blob đã báo Success.
-- [ ] Kiểm tra runtime: đọc catalog, đăng nhập, upload ảnh, thêm/sửa/xóa sản phẩm trên Preview sau khi cấu hình biến môi trường.
-- [ ] Sau khi xác nhận upload/ghi Blob bằng OIDC, xem xét thu hồi read-write token cũ nếu token không được dùng ngoài Vercel.
+- [x] Đọc catalog trực tiếp bằng `get('data/catalog.json')`, bỏ bước `list()` rồi mới tải URL.
+- [x] Thêm cache trong bộ nhớ theo từng Function instance (TTL 10 giây) và gộp các lượt đọc đồng thời.
+- [x] Giữ Blob làm nguồn dữ liệu chính; cập nhật cache instance hiện tại ngay sau khi ghi thành công.
+- [x] Dùng `head()` để lấy ETag trước khi ghi, thay cho thao tác `list()` để tìm metadata.
+- [x] Giảm shared CDN cache API xuống 5 giây để cân bằng tốc độ và độ mới dữ liệu.
+- [ ] Kiểm thử build và CRUD trên Vercel Preview sau khi merge.
 
 ## Lưu ý
 
@@ -41,4 +43,3 @@
 - Danh sách báo giá hiện chỉ nằm trong state trình duyệt, chưa được gửi/lưu trên server.
 - Bản đầu giới hạn upload 4 MB/ảnh do request body của Vercel Functions.
 - Xóa sản phẩm chưa tự xóa ảnh cũ trên Blob; cần dọn file mồ côi có chủ đích.
-  Test Vercel Preview Deployment.
