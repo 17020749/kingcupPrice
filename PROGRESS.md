@@ -35,6 +35,10 @@
 - [x] Giữ Blob làm nguồn dữ liệu chính; cập nhật cache instance hiện tại ngay sau khi ghi thành công.
 - [x] Dùng `head()` để lấy ETag trước khi ghi, thay cho thao tác `list()` để tìm metadata.
 - [x] Giảm shared CDN cache API xuống 5 giây để cân bằng tốc độ và độ mới dữ liệu.
+- [ ] Thêm `NUXT_ADMIN_PASSWORD` và `NUXT_ADMIN_SESSION_SECRET` vào Vercel Production và Preview.
+- [x] Vercel check cho commit tích hợp Blob đã báo Success.
+- [ ] Kiểm tra runtime: đọc catalog, đăng nhập, upload ảnh, thêm/sửa/xóa sản phẩm trên Preview sau khi cấu hình biến môi trường.
+- [ ] Sau khi xác nhận upload/ghi Blob bằng OIDC, xem xét thu hồi read-write token cũ nếu token không được dùng ngoài Vercel.
 - [ ] Kiểm thử build và CRUD trên Vercel Preview sau khi merge.
 
 ## Lưu ý
