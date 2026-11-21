@@ -1,9 +1,30 @@
-import { list, put } from '@vercel/blob';
+import { get, head, put } from '@vercel/blob';
 import { categories, sampleProducts } from '../../app/data/products';
 import type { CatalogData, Product, ProductCategory, ProductVisual } from '../../app/types/product';
 
 const CATALOG_PATH = 'data/catalog.json';
 const VALID_VISUALS: ProductVisual[] = ['box', 'tape', 'film', 'pouch', 'bubble', 'bag'];
+const CACHE_TTL_MS = 10_000;
+
+// Module memory is reused by warm serverless instances. It is an optimization only;
+// Blob remains the source of truth because Vercel may create or recycle instances.
+let cachedCatalog: { value: CatalogData; expiresAt: number } | null = null;
+let pendingRead: Promise<CatalogData> | null = null;
+
+function cloneCatalog(value: CatalogData): CatalogData {
+  return {
+    categories: value.categories.map((item) => ({ ...item })),
+    products: value.products.map((item) => ({ ...item })),
+    updatedAt: value.updatedAt,
+  };
+}
+
+function setMemoryCache(value: CatalogData) {
+  cachedCatalog = {
+    value: cloneCatalog(value),
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  };
+}
 
 function makeDefaultCatalog(): CatalogData {
   return {
@@ -13,15 +34,14 @@ function makeDefaultCatalog(): CatalogData {
   };
 }
 
-async function findCatalogBlob() {
-  const result = await list({ prefix: CATALOG_PATH, limit: 10 });
-  return result.blobs.find((blob) => blob.pathname === CATALOG_PATH);
-}
+async function downloadCatalog(): Promise<CatalogData | null> {
+  // get(pathname) resolves the known object directly; unlike list(), it does not
+  // enumerate the store before reading the catalog.
+  const result = await get(CATALOG_PATH, { access: 'public' });
+  if (!result || result.statusCode !== 200 || !result.stream) return null;
 
-async function downloadCatalog(url: string): Promise<CatalogData> {
-  const response = await fetch(url, { cache: 'no-store' });
-  if (!response.ok) throw new Error('Không thể đọc catalog.json từ Vercel Blob.');
-  return normaliseCatalog(await response.json());
+  const input = await new Response(result.stream).json();
+  return normaliseCatalog(input);
 }
 
 export function normaliseCatalog(input: unknown): CatalogData {
@@ -103,9 +123,20 @@ export function normaliseCatalog(input: unknown): CatalogData {
 }
 
 export async function getCatalog(): Promise<CatalogData> {
-  const blob = await findCatalogBlob();
+  if (cachedCatalog && cachedCatalog.expiresAt > Date.now()) {
+    return cloneCatalog(cachedCatalog.value);
+  }
 
-  if (!blob) {
+  if (pendingRead) return cloneCatalog(await pendingRead);
+
+  pendingRead = (async () => {
+    const existing = await downloadCatalog();
+    if (existing) {
+      setMemoryCache(existing);
+      return existing;
+    }
+
+    // First-run bootstrap only. Subsequent reads use direct get(pathname).
     const initial = makeDefaultCatalog();
     await put(CATALOG_PATH, JSON.stringify(initial), {
       access: 'public',
@@ -114,34 +145,54 @@ export async function getCatalog(): Promise<CatalogData> {
       contentType: 'application/json; charset=utf-8',
       cacheControlMaxAge: 60,
     });
+    setMemoryCache(initial);
     return initial;
-  }
+  })();
 
-  return downloadCatalog(blob.url);
+  try {
+    return cloneCatalog(await pendingRead);
+  } finally {
+    pendingRead = null;
+  }
 }
 
 export async function saveCatalog(input: unknown): Promise<CatalogData> {
   const nextCatalog = normaliseCatalog(input);
-  const currentBlob = await findCatalogBlob();
 
   try {
+    // One metadata request replaces the previous list() operation. Keep the ETag
+    // precondition so concurrent admin writes cannot silently overwrite each other.
+    const currentBlob = await head(CATALOG_PATH);
     await put(CATALOG_PATH, JSON.stringify(nextCatalog), {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: 'application/json; charset=utf-8',
       cacheControlMaxAge: 60,
-      ...(currentBlob?.etag ? { ifMatch: currentBlob.etag } : {}),
+      ifMatch: currentBlob.etag,
     });
   } catch (error: any) {
-    if (error?.name === 'BlobPreconditionFailedError') {
+    if (error?.name === 'BlobNotFoundError') {
+      // Catalog may not exist yet in a fresh store.
+      await put(CATALOG_PATH, JSON.stringify(nextCatalog), {
+        access: 'public',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: 'application/json; charset=utf-8',
+        cacheControlMaxAge: 60,
+      });
+    } else if (error?.name === 'BlobPreconditionFailedError') {
       throw createError({
         statusCode: 409,
         statusMessage: 'Dữ liệu vừa được thay đổi ở nơi khác. Hãy tải lại trang quản trị rồi thử lại.',
       });
+    } else {
+      throw error;
     }
-    throw error;
   }
 
-  return nextCatalog;
+  // Update the current warm instance immediately; other instances refresh within
+  // CACHE_TTL_MS and the public API edge cache has a short TTL as well.
+  setMemoryCache(nextCatalog);
+  return cloneCatalog(nextCatalog);
 }

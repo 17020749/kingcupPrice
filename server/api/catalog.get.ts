@@ -1,7 +1,8 @@
 import { getCatalog } from '../utils/catalog-store';
 
 export default defineEventHandler(async (event) => {
-  setHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=15, stale-while-revalidate=15');
+  // Short shared edge cache keeps public reads fast without leaving product data stale for long.
+  setHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=5, stale-while-revalidate=5');
 
   try {
     return await getCatalog();
